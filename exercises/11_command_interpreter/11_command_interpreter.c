@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define MAX_ARGS 10
 #define MAX_INPUT_LENGTH 256
@@ -56,12 +57,22 @@ int main(void)
 int shell_parse(char *buf, char *argv[])
 {
     int argc = 0;
-    int state = 0;
+    bool space = true;
+    int idx = 0;
     // TODO: 在这里添加你的代码，完成命令行解析
     // 功能：将输入字符串buf按空格分割成多个参数，存入argv数组
     // 返回：参数个数argc
     // 提示：使用状态机的方式处理，注意处理字符串结束符
-    // I AM NOT DONE
+    while (buf[idx]!=NULL && argc<MAX_ARGS){
+        if (space && buf[idx]!=' '){
+            argv[argc++] = (char *)(buf + idx);
+            space = false;
+        }else if (~space && buf[idx]==' '){
+            space = true;
+            buf[idx] = NULL;
+        }
+        idx ++;
+    }
     return argc;
 }
 
