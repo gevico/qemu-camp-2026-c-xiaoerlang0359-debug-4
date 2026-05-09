@@ -39,7 +39,15 @@ int __cmd_myfile(const char* filename) {
     printf("filepath: %s\n", filepath);
 
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    fd = open(filepath, O_RDONLY);
+    if (fd < 0) {
+      perror("open");
+    }
+
+    if (read(fd, &ehdr, sizeof(ehdr)) != sizeof(ehdr)) {
+      perror("read");
+      close(fd);
+    }
 
     print_elf_type(ehdr.e_type);
     close(fd);
