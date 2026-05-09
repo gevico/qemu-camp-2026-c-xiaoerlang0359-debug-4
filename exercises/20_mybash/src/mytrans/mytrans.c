@@ -1,10 +1,12 @@
 // mytrans.c
 #include "myhash.h"
 #include <ctype.h>
+#include <libgen.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 void trim(char *str) {
     // TODO: 在这里添加你的代码
@@ -58,7 +60,26 @@ int __cmd_mytrans(const char* filename) {
 
   printf("=== 哈希表版英语翻译器（支持百万级数据）===\n");
   uint64_t dict_count = 0;
-  if (load_dictionary("src/mytrans/dict.txt", table, &dict_count) != 0) {
+
+  // 基于可执行文件位置解析 dict.txt 路径
+  char dict_path[512];
+  char exe_path[512];
+  ssize_t len = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+  if (len != -1) {
+    exe_path[len] = '\0';
+    // 可执行文件位于 .../20_mybash/bin/mybash
+    // 向上两级到 exercises/20_mybash 目录
+    char *exe_dir = dirname(exe_path);      // .../20_mybash/bin
+    char exe_dir_copy[512];
+    strncpy(exe_dir_copy, exe_dir, sizeof(exe_dir_copy) - 1);
+    char *base_dir = dirname(exe_dir_copy); // .../20_mybash
+    snprintf(dict_path, sizeof(dict_path), "%s/src/mytrans/dict.txt", base_dir);
+  } else {
+    // /proc/self/exe 不可用时回退到相对路径
+    strncpy(dict_path, "src/mytrans/dict.txt", sizeof(dict_path) - 1);
+  }
+
+  if (load_dictionary(dict_path, table, &dict_count) != 0) {
     fprintf(stderr, "加载词典失败，请确保 dict.txt 存在。\n");
     free_hash_table(table);
     return 1;

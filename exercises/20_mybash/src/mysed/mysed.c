@@ -48,26 +48,19 @@ void replace_first_occurrence(char* str, const char* old, const char* new) {
     if (!str || !old || !new) {
         return;
     }
-    char * pos = strstr(str, old);
-    if (pos == NULL){
-        printf("found none!!!");
+    char *pos = strstr(str, old);
+    if (pos == NULL) {
         return;
     }
-    int str_len = strlen(str);
     int old_len = strlen(old);
-    for (char* p = pos; p<=(pos + str_len-old_len); p++){
-        *p = *(p+old_len);
-    }
     int new_len = strlen(new);
-    for (char* p = (str+str_len); p >= pos; p--){
-        *(p+new_len) = *(p);
-    }
-    int i=0;
-    for (char* p=pos; p<(pos+new_len);p++){
-        *p = new[i];
-        i++; 
-    }
-    
+
+    // 用 memmove 将 old 之后的字符串（含 '\0'）移动到正确位置
+    // memmove 可安全处理重叠内存区域
+    memmove(pos + new_len, pos + old_len, strlen(pos + old_len) + 1);
+
+    // 将新字符串复制到 old 原来的位置
+    memcpy(pos, new, new_len);
 }
 
 int __cmd_mysed(const char* rules, const char* str) {

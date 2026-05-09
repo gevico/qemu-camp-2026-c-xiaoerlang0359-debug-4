@@ -109,8 +109,21 @@
     }
     
      
-     char compile_output[4096] = {0};
-     size_t bytes_read = fread(compile_output, 1, sizeof(compile_output) - 1, fp);
+     // 循环读取编译输出，确保管道完全排空（避免子进程收到 SIGPIPE）
+     char compile_output[8192] = {0};
+     size_t total_read = 0;
+     size_t bytes_read;
+     while ((bytes_read = fread(compile_output + total_read, 1,
+                                sizeof(compile_output) - 1 - total_read, fp)) > 0) {
+         total_read += bytes_read;
+         if (total_read >= sizeof(compile_output) - 1) {
+             // 缓冲区满，丢弃剩余数据以排空管道
+             char drain[256];
+             while (fread(drain, 1, sizeof(drain), fp) > 0) {}
+             break;
+         }
+     }
+     compile_output[total_read] = '\0';
      int compile_status = pclose(fp);
      
      // 检查编译是否成功
@@ -143,9 +156,20 @@
 
      
      
-     // 读取程序输出
-     bytes_read = fread(output, 1, output_size - 1, fp);
-     output[bytes_read] = '\0';
+     // 循环读取程序输出，确保管道排空
+     {
+         size_t run_total = 0;
+         size_t run_n;
+         while ((run_n = fread(output + run_total, 1, output_size - 1 - run_total, fp)) > 0) {
+             run_total += run_n;
+             if (run_total >= output_size - 1) {
+                 char drain[256];
+                 while (fread(drain, 1, sizeof(drain), fp) > 0) {}
+                 break;
+             }
+         }
+         output[run_total] = '\0';
+     }
      
      int run_status = pclose(fp);
      return run_status;
