@@ -3,7 +3,11 @@
 
 uint32_t swap_endian(uint32_t num) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    unsigned int result;
+    result = ((num & 0xff)<< 24) | 
+             ((num & 0xff00)<<8) |
+             ((num & 0xff0000)>>8) |
+             ((num & 0xff000000)>>24);
 }
 
 int main(int argc, char* argv[]) {

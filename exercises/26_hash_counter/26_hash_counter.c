@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 200809L  // 启用 strdup
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,7 +23,11 @@ typedef struct {
 // djb2哈希函数
 unsigned long djb2_hash(const char *str) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    unsigned long hash = 5381;
+    int c;
+    while ((c = *str++))
+        hash = ((hash << 5) + hash) + c; // hash * 33 + c
+    return hash % TABLE_SIZE;
 }
 
 // 创建哈希表
@@ -37,13 +43,34 @@ void hash_table_insert(HashTable *ht, const char *word) {
     unsigned long hash = djb2_hash(word) % ht->size;
 
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    HashNode* curr = ht->table[hash];
+    while(curr != NULL){
+        if (strcmp(curr->word, word)==0){
+            curr->count++;
+            return;
+        }
+        curr = curr->next;
+    }
+    HashNode * new_node = malloc(sizeof(HashNode));
+    new_node->word = strdup(word);
+    new_node->count = 1;
+    new_node->next = ht->table[hash];
+    ht->table[hash] = new_node;
 }
 
 // 从哈希表中获取所有单词及其计数
 void get_all_words(HashTable *ht, HashNode **nodes, int *count) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    for (int i=0;i<ht->size;i++){
+        HashNode * curr = ht->table[i];
+        while (curr != NULL){
+            if (curr->count>0){
+                if (*count < ht->size)
+                    nodes[(*count)++] = curr;
+            }
+            curr = curr->next;
+        }
+    }
 }
 
 // 比较函数用于排序
@@ -53,7 +80,9 @@ int compare_nodes(const void *a, const void *b) {
     
     // 先按计数降序，再按字母升序
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    if (node_a->count != node_b->count) 
+        return node_b->count - node_a->count;
+    return strcmp(node_a->word, node_b->word);
 }
 
 // 释放哈希表内存
@@ -73,11 +102,38 @@ void free_hash_table(HashTable *ht) {
 
 // 从字符串中获取下一个单词
 char *get_next_word(const char **text) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    const char *p = *text;
+
+    // 跳过非字母字符
+    while (*p && !isalpha((unsigned char)*p))
+        p++;
+
+    // 到字符串末尾，没有更多单词
+    if (*p == '\0')
+        return NULL;
+
+    // 提取连续字母并转为小写
+    char buf[256];
+    int i = 0;
+    while (*p && isalpha((unsigned char)*p) && i < 255) {
+        buf[i++] = (char)tolower((unsigned char)*p);
+        p++;
+    }
+    buf[i] = '\0';
+
+    // 更新调用者的指针位置
+    *text = p;
+
+    // 返回 malloc 分配的副本（调用者负责 free）
+    char *word = malloc(i + 1);
+    if (word)
+        strcpy(word, buf);
+    return word;
 }
 
 int main(int argc, char *argv[]) {
+    (void)argc;
+    (void)argv;
     const char* file_path = "paper.txt";
 
     FILE *file = fopen(file_path, "r");

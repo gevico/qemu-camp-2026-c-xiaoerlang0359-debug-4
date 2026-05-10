@@ -7,8 +7,12 @@
 int check_add_overflow_asm(unsigned int a, unsigned int b) {
     unsigned char carry;
     __asm__ volatile(
-        // TODO: 在这里添加你的代码
-        // I AM NOT DONE
+        "movl %1, %%eax\n\t"   // eax = a
+        "addl %2, %%eax\n\t"   // eax += b, CF set if unsigned overflow
+        "setc %0\n\t"          // carry = CF
+        : "=r" (carry)
+        : "r" (a), "r" (b)
+        : "eax"
     );
     return carry;
 }
@@ -16,8 +20,12 @@ int check_add_overflow_asm(unsigned int a, unsigned int b) {
 int check_sub_overflow_asm(unsigned int a, unsigned int b) {
     unsigned char carry;
     __asm__ volatile(
-        // TODO: 在这里添加你的代码
-        // I AM NOT DONE
+        "movl %1, %%eax\n\t"   // eax = a
+        "subl %2, %%eax\n\t"   // eax -= b, CF set if borrow (a < b)
+        "setc %0\n\t"          // carry = CF
+        : "=r" (carry)
+        : "r" (a), "r" (b)
+        : "eax"
     );
     return carry;
 }
@@ -26,17 +34,25 @@ int check_mul_overflow_asm(unsigned int a, unsigned int b) {
     unsigned int high_bits;
     unsigned char overflow;
     __asm__ volatile(
-        // TODO: 在这里添加你的代码
-        // I AM NOT DONE
+        "movl %2, %%eax\n\t"   // eax = a
+        "mull %3\n\t"          // edx:eax = eax * b, CF=1 if edx != 0
+        "setc %0\n\t"          // overflow = CF
+        "movl %%edx, %1\n\t"   // high_bits = edx
+        : "=r" (overflow), "=r" (high_bits)
+        : "r" (a), "r" (b)
+        : "eax", "edx"
     );
     return overflow || (high_bits != 0);
 }
 
 int check_div_overflow_asm(unsigned int a, unsigned int b) {
+    (void)a;  // a 在除法溢出检测中不使用
     unsigned char is_div_zero;
     __asm__ volatile(
-        // TODO: 在这里添加你的代码
-        // I AM NOT DONE
+        "cmpl $0, %1\n\t"      // cmp b, 0 → ZF=1 if b == 0
+        "sete %0\n\t"          // is_div_zero = ZF
+        : "=r" (is_div_zero)
+        : "r" (b)
     );
     return is_div_zero;
 }
