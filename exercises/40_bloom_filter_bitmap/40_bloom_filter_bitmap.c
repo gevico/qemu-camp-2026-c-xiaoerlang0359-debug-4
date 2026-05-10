@@ -14,38 +14,63 @@ typedef struct {
 
 static Bloom *bloom_create(size_t m) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    Bloom* bloom = malloc(sizeof(Bloom));
+    bloom->bits = malloc(m/8+1);
+    bloom->m = m;
+    return bloom;
 }
 
 static void bloom_free(Bloom *bf) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    free(bf->bits);
+    free(bf);
 }
 
 /* 位操作 */
 static void set_bit(unsigned char *bm, size_t idx) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    int byte_idx = idx/8;
+    int bit_off  = idx % 8;
+    bm[byte_idx] |= (1<<bit_off);
 }
 static int test_bit(const unsigned char *bm, size_t idx) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    int byte_idx = idx/8;
+    int bit_off  = idx % 8;
+    return (bm[byte_idx] & (1<<bit_off))>>bit_off;
 }
 
 /* 三个简单哈希：sum(c*k) % m */
 static size_t hash_k(const char *s, size_t m, int k) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    char * c = s;
+    int sum=0;
+    while (*c){
+        sum+= (*c)*k;
+        c++;
+    }
+    return sum % m;
 }
 
 static void bloom_add(Bloom *bf, const char *s) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    int hash_1 = hash_k(s, bf->m, 1);
+    int hash_2 = hash_k(s, bf->m, 2);
+    int hash_3 = hash_k(s, bf->m, 3);
+    set_bit(bf->bits, hash_1);
+    set_bit(bf->bits, hash_2);
+    set_bit(bf->bits, hash_3);
 }
 
 static int bloom_maybe_contains(Bloom *bf, const char *s) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    int hash_1 = hash_k(s, bf->m, 1);
+    int hash_2 = hash_k(s, bf->m, 2);
+    int hash_3 = hash_k(s, bf->m, 3);
+    int test_1 = test_bit(bf->bits, hash_1);
+    int test_2 = test_bit(bf->bits, hash_2);
+    int test_3 = test_bit(bf->bits, hash_3);
+    return (test_1 && test_2 && test_3);
 }
 
 int main(void) {

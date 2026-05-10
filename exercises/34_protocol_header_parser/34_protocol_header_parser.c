@@ -19,7 +19,12 @@
  */
 typedef struct {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    uint16_t ver_major:4;
+    uint16_t ver_minor:4;
+    uint16_t v_rsvd:8;
+    uint16_t length_be;
+    uint8_t f_rsvd:3;
+    uint8_t flags:5;
 } proto_header_raw_t;
 
 /*
@@ -28,7 +33,12 @@ typedef struct {
  */
 typedef struct {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    uint16_t v_rsvd:8;
+    uint16_t ver_minor:4;
+    uint16_t ver_major:4;
+    uint16_t length;
+    uint8_t flags:5;
+    uint8_t f_rsvd:3;
 } proto_header_bits_t;
 
 #pragma pack(pop)
@@ -38,7 +48,9 @@ typedef struct {
  */
 static uint16_t be16_to_cpu(uint16_t be) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    uint16_t result = ((be & 0xff)<< 8) |
+                      ((be & 0xff00)>> 8);
+    return result;
 }
 
 int main(void) {
@@ -46,22 +58,23 @@ int main(void) {
     const uint8_t stream[5] = {0x00, 0x03, 0x00, 0x20, 0x00};
 
     /* 将字节流复制到与其逐字节匹配的原始头结构体中 */
-    proto_header_raw_t raw = {0};
-    memcpy(&raw, stream, sizeof(raw));
+    proto_header_bits_t view = {0};
+    memcpy(&view, stream, sizeof(view));
 
     /* 解析版本号：题目定义“4 位主版本 + 4 位次版本”，位于版本字段的低 8 位 */
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    
 
     /* 解析长度：网络序 16 位 */
-    uint16_t length = be16_to_cpu(raw.length_be);
+    view.length = be16_to_cpu(view.length);
 
     /* 解析标志位：低 5 位为功能标志 */
-    unsigned flags = (unsigned)(raw.flags_raw & 0x1Fu);
+    //unsigned flags = (unsigned)(raw.flags & 0x1Fu);
 
     /* 使用位域结构体表达（非内存映射，仅用于说明位域解析规则） */
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    
+    
 
     /* 期望输出：version:0.3, length:32, flags:0x00 */
     printf("version:%u.%u, length:%u, flags:0x%02X\n", view.ver_major, view.ver_minor, view.length, view.flags & 0xFFu);
