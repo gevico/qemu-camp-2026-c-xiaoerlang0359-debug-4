@@ -15,5 +15,6 @@ void insert(link p); // 头插到 head 之后
 void delete(link p); // 从链表中移除指定结点（不释放）
 void traverse(void (*visit)(link));
 void destroy(void); // 清空链表并释放所有结点
+int is_empty(void);
 
 #endif // DOUBLY_CIRCULAR_QUEUE_H
